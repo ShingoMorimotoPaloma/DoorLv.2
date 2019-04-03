@@ -1,0 +1,4 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "DoorLv2\\DoorLv2\\DoorLv2.ino"
+}

@@ -6,29 +6,6 @@ typedef struct
     char *Value;
 }EEPROMdata;
 
-typedef struct PassCode
-{
-    EEPROMdata *Key[4];
-    EEPROMdata Checksum;
-};
-
-PassCode KeyCodeA
-{
-    {EAddressKeyA[0],&AlKey[0]},
-    {EAddressKeyA[1],&AlKey[1]},
-    {EAddressKeyA[2],&AlKey[2]},
-    {EAddressKeyA[3],&AlKey[3]},
-    {EAddressKeyA[4],&CheckSumA},
-};
-
-PassCode KeyCodeB
-{
-    {EAddressKeyB[0],&AlKey[0]},
-    {EAddressKeyB[1],&AlKey[1]},
-    {EAddressKeyB[2],&AlKey[2]},
-    {EAddressKeyB[3],&AlKey[3]},
-    {EAddressKeyB[4],&CheckSumB},
-};
 
 int EAddressKeyA[] = {0,1,2,3,4};
 int EAddressKeyB[] = {5,6,7,8,9};
@@ -174,7 +151,7 @@ bool CheckParity(byte v)
     return false;
         
 }
-
+/*
 void CheckSumCalc(PassCode p)
 {
     byte b;
@@ -183,5 +160,5 @@ void CheckSumCalc(PassCode p)
     b = p.Key[2];
     b = p.Key[3];
     P.Checksum = b;
-}
+}*/
     
