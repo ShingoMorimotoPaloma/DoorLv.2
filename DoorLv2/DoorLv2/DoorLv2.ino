@@ -26,13 +26,17 @@ void setup() {
   BuzzerInitial();
   LcdSetup();
   LcdCalc();
-  EepromInitial();
-  IntegrationTestEepromInitial();
-  Serial.begin(9600);
+  //EepromInitial();
+  //IntegrationTestEepromInitial();
+  for(int i = 0; i < 4; i++)
+  {
+    AlKey[i] = '0';
+  }
+  
 }
 
 void loop() {
-  Serial.println(MainState);
+  
   ServoCalc(); //サーボモーターの処理
   BuzzerCalc();
   LcdCalc();
@@ -56,6 +60,21 @@ void MainStateSwitch()
     case InvaildPasscord:
       MainState_04_InvailPasscord();
       break;
+    case InputOldKey:
+      MainState_05_InputOldKey();
+      break;
+    case InputNewKey1:
+      MainState_06_InputNewKey1();
+      break;
+    case InputNewKey2:
+      MainState_07_InputNewKey2();
+      break;
+    case Succsess:
+      MainState_08_Succsess();
+      break;
+    case Failed:
+      MainState_09_Failed();
+      break;
     }
   }
 void MainState_01_Closed()
@@ -69,6 +88,15 @@ void MainState_01_Closed()
     Timer10ms.T.BuzzerOn = 5;
     BufClear();
   }
+  if (customKey == '#') {
+    KeyCounter = 0;
+    PasscodeCharCount = 0;
+    MainState = InputOldKey;
+    Timer10ms.T.Input = E_Timing_InputTime;
+    Timer10ms.T.BuzzerOn = 5;
+    BufClear();   
+  }
+  
   LcdState = 0;
   ServoState = Close;
   }
@@ -130,6 +158,103 @@ void MainState_04_InvailPasscord()
   }
 
   LcdState = 3;
+  ServoState = Close;
+}
+void MainState_05_InputOldKey()
+{
+  char customKey = GetKey();
+  if (customKey){
+    KeyCounter++;
+    PasscodeCharCount++;
+    Timer10ms.T.BuzzerOn = 5;
+    BufShift(customKey,OldKeyOne);
+  }
+
+  if (KeyCounter >= 4)
+  {
+      KeyCounter = 0;
+      PasscodeCharCount = 0;
+      MainState = InputNewKey1;
+      Timer10ms.T.BuzzerOn = 15; //ブザーを150ms鳴らす    
+  }
+  LcdState = 5;
+  ServoState = Close;
+}
+void MainState_06_InputNewKey1()
+{
+  char customKey = GetKey();
+  if (customKey){
+    KeyCounter++;
+    PasscodeCharCount++;
+    Timer10ms.T.BuzzerOn = 5;
+    BufShift(customKey,NewKeyOne);
+  }
+
+  if (KeyCounter >= 4)
+  {
+      KeyCounter = 0;
+      PasscodeCharCount = 0;
+      MainState = InputNewKey2;
+      Timer10ms.T.BuzzerOn = 15; //ブザーを150ms鳴らす    
+  }
+  LcdState = 6;
+  ServoState = Close;
+}
+void MainState_07_InputNewKey2()
+{
+  char customKey = GetKey();
+  if (customKey){
+    KeyCounter++;
+    PasscodeCharCount++;
+    Timer10ms.T.BuzzerOn = 5;
+    BufShift(customKey,NewKeyTwo);
+  }
+
+  if (KeyCounter >= 4)
+  {
+    Serial.begin(9600);
+    Serial.println(AlKey);
+    Serial.println(OldKeyOne);
+    Serial.println(NewKeyOne);
+    Serial.println(NewKeyTwo);
+    Serial.end();
+    if (KeyMach(AlKey,OldKeyOne) & KeyMach(NewKeyOne,NewKeyTwo)) {
+      Timer10ms.T.BuzzerOn = 50;
+      Timer10ms.T.Display = 200;
+      MainState = Succsess;
+      for(int i = 0; i < 4; i++)
+      {
+        AlKey[i] = NewKeyOne[i];
+      }
+      
+    }
+    else {
+      Timer10ms.T.BuzzerOn = 100;
+      Timer10ms.T.Display = 200;
+      MainState = Failed;
+    }
+    
+  }
+  LcdState = 7;
+  ServoState = Close;
+}
+
+void MainState_08_Succsess()
+{
+  if (!Timer10ms.T.Display) {
+    MainState = Closed;
+  }
+  
+  LcdState = 8;
+  ServoState = Close;
+}
+void MainState_09_Failed()
+{
+  if (!Timer10ms.T.Display) {
+    MainState = Closed;
+  }
+  
+  LcdState = 9;
   ServoState = Close;
 }
 

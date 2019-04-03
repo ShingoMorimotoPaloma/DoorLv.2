@@ -20,23 +20,29 @@ char EepromBackupKey[4];
 
 union TM
 {
-  unsigned long TimerAry[4];
+  unsigned long TimerAry[6];
   struct Timer
   {
     unsigned long Opening;
     unsigned long InvaildAlert;
     unsigned long BuzzerOn;
     unsigned long Input;
+    unsigned long Display;
   }T;
 };
 
 
-enum TypeOfState 
+enum TypeOfState
 {
   Closed,
   Opened,
   InputReady,
-  InvaildPasscord
+  InvaildPasscord,
+  InputOldKey,
+  InputNewKey1,
+  InputNewKey2,
+  Succsess,
+  Failed
   };
 
 enum TypeOfServo

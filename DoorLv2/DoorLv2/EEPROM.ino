@@ -6,6 +6,13 @@ typedef struct
     char *Value;
 }EEPROMdata;
 
+typedef struct PassCode
+{
+    EEPROMdata *Key[4];
+    EEPROMdata Checksum;
+};
+
+
 
 int EAddressKeyA[] = {0,1,2,3,4};
 int EAddressKeyB[] = {5,6,7,8,9};
@@ -160,5 +167,5 @@ void CheckSumCalc(PassCode p)
     b = p.Key[2];
     b = p.Key[3];
     P.Checksum = b;
-}*/
-    
+}
+    */
