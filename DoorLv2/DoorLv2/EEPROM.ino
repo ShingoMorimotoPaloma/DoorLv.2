@@ -140,12 +140,7 @@ bool ParityCalc(char a)
         
     }
 
-    if (p) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return p;
     
 }
 //パリティが正しいかを判定する
