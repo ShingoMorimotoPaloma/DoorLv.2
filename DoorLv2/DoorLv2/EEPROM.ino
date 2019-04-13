@@ -1,49 +1,20 @@
 #include <EEPROM.h>
 
-typedef struct 
-{
-    int Address;
-    char *Value;
-}EEPROMdata;
 
-typedef struct PassCode
-{
-    EEPROMdata *Key[4];
-    EEPROMdata Checksum;
-};
+int EAddressKeyA[] = {0,1,2,3};
+int EAddressKeyB[] = {5,6,7,8};
 
-
-
-int EAddressKeyA[] = {0,1,2,3,4};
-int EAddressKeyB[] = {5,6,7,8,9};
-
-int EndAddress = 0xFFFF;
 
 char CheckSumA;
 char CheckSumB;
+int EAddressCheckSumA = 4;
+int EAddressCheckSumB = 9;
+
 //EEPROMのパリティエラー
 bool FlgEepromError = false;
 bool FlgEepromWrite = false;
 int PointOfEepWrite = 0;
 
-EEPROMdata EepDataA[] =  
-{
-    {EAddressKeyA[0],&AlKey[0]},
-    {EAddressKeyA[1],&AlKey[1]},
-    {EAddressKeyA[2],&AlKey[2]},
-    {EAddressKeyA[3],&AlKey[3]},
-    {EAddressKeyA[4],&CheckSumA},
-    {EndAddress,0}    
-    };
-EEPROMdata EepDataB[] =  
-{
-    {EAddressKeyB[0],&AlKey[0]},
-    {EAddressKeyB[1],&AlKey[1]},
-    {EAddressKeyB[2],&AlKey[2]},
-    {EAddressKeyB[3],&AlKey[3]},
-    {EAddressKeyB[4],&CheckSumB},
-    {EndAddress,0}    
-    };
 
 //EEPROMのイニシャライズ
 //setup関数から呼ばれることを期待
@@ -52,19 +23,34 @@ void EepromInitial()
 {   Serial.begin(9600);
     for(int i = 0;i < 4; i++)
     {
-        Serial.println(EepDataA[i].Address,HEX);
-        if (EepDataA[i].Address == EndAddress) break;
-        //EepDataA[i].Value = (char*)(EEPROM.read(EepDataA[i].Address));
-        byte b = EEPROM.read(EepDataA[i].Address);
+        byte b = EEPROM.read(EAddressKeyA[i]);
         if (!CheckParity(b)) FlgEepromError = true;
-        EepDataA[i].Value = (char*)(b);
-        //AlKey[i] = (char)(b);
+        AlKey[i] = (char)(b);
     }
-    IntegrationTestEepromInitial();
-    while(true){
-        /* code */
+    byte b = EEPROM.read(EAddressCheckSumA);
+    if (!CheckParity(b)) FlgEepromError = true;
+    if(!SumCheck()) FlgEepromError = true;
+    //IntegrationTestEepromInitial();
+}
+
+
+//チェックサムの確認
+bool SumCheck()
+{
+    unsigned short A[5];
+    for(int i = 0; i < 4; i++)
+    {
+        A[i] = (unsigned short)AlKey[i];
     }
-    
+    A[4] = (unsigned short)CheckSumA;
+    unsigned short t = A[0] + A[1] + A[2] + A[3];
+    t = t & 0b0000000001111111;
+    if (t = A[4]) {
+        return true;
+    }else
+    {
+        return false;
+    }       
 }
 
 void EepWrite(int Address,char value)
