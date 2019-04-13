@@ -29,8 +29,16 @@ void EepromInitial()
     }
     byte b = EEPROM.read(EAddressCheckSumA);
     if (!CheckParity(b)) FlgEepromError = true;
-    if(!SumCheck()) FlgEepromError = true;
-    //IntegrationTestEepromInitial();
+    if(!SumCheck())
+    {
+        for(int i = 0;i < 4; i++)
+        {
+            byte b = EEPROM.read(EAddressKeyB[i]);
+            if (!CheckParity(b)) FlgEepromError = true;
+            AlKey[i] = (char)(b);
+        }        
+    }
+        //IntegrationTestEepromInitial();
 }
 
 
@@ -45,7 +53,7 @@ bool SumCheck()
     A[4] = (unsigned short)CheckSumA;
     unsigned short t = A[0] + A[1] + A[2] + A[3];
     t = t & 0b0000000001111111;
-    if (t = A[4]) {
+    if (t == A[4]) {
         return true;
     }else
     {
@@ -61,6 +69,7 @@ void EepWrite(int Address,char value)
 
 void EepromCalc()
 {
+    CheckSumCalc(); //とりあえずチェックサムは毎回更新
     if (KeyMach(EepromBackupKey,AlKey)) 
     {
         FlgEepromWrite = true;
@@ -73,19 +82,23 @@ void EepromCalc()
     if (!FlgEepromWrite) {
         return;
     }
-    if (PointOfEepWrite < 5) {
-        EepWrite(EepDataA[PointOfEepWrite].Address,EepDataA[PointOfEepWrite].Value);
+    if (PointOfEepWrite < 4) {
+        EepWrite(EAddressKeyA[PointOfEepWrite],AlKey[PointOfEepWrite]);
         PointOfEepWrite++;
+        return;
     }
-    else if(PointOfEepWrite < 10) {
-        EepWrite(EepDataB[PointOfEepWrite - 5].Address,EepDataB[PointOfEepWrite - 5].Value);
-        PointOfEepWrite++;       
+    if (PointOfEepWrite == 4) {
+        EepWrite(EAddressCheckSumA,CheckSumA);
+        PointOfEepWrite++;
+        return;
+    }   
+    if (PointOfEepWrite < 9) {
+        EepWrite(EAddressKeyB[PointOfEepWrite - 5],AlKey[PointOfEepWrite - 5]);
+        PointOfEepWrite++;
+        return;
     }
-    else {
-        FlgEepromWrite = false;
-    }
-    
-    
+    EepWrite(EAddressCheckSumB,CheckSumB);
+    FlgEepromWrite = false;
 }
 
 
@@ -139,14 +152,17 @@ bool CheckParity(byte v)
     return false;
         
 }
-/*
-void CheckSumCalc(PassCode p)
+
+void CheckSumCalc()
 {
-    byte b;
-    b = p.Key[0];
-    b = p.Key[1];
-    b = p.Key[2];
-    b = p.Key[3];
-    P.Checksum = b;
+    unsigned short A[5];
+    for(int i = 0; i < 4; i++)
+    {
+        A[i] = (unsigned short)AlKey[i];
+    }
+    A[4] = (unsigned short)CheckSumA;
+    unsigned short t = A[0] + A[1] + A[2] + A[3];
+    t = t & 0b0000000001111111;
+    CheckSumA = (char)t;
+    CheckSumB = (char)t;
 }
-    */
