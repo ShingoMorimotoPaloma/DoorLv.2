@@ -70,7 +70,7 @@ void EepWrite(int Address,char value)
 void EepromCalc()
 {
     CheckSumCalc(); //とりあえずチェックサムは毎回更新
-    if (KeyMach(EepromBackupKey,AlKey)) 
+    if (!KeyMach(EepromBackupKey,AlKey)) 
     {
         FlgEepromWrite = true;
         PointOfEepWrite = 0;
