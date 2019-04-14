@@ -40,6 +40,7 @@ void loop() {
   ServoCalc(); //サーボモーターの処理
   BuzzerCalc();
   LcdCalc();
+  EepromCalc();
   MainStateSwitch();  //メイン状態遷移処理
 
 }
